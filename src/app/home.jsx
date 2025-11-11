@@ -13,7 +13,11 @@ const ItemCard = ({ item }) => {
       <div className="flex flex-row gap-4 rounded-lg m-2 p-4 hover:bg-gray-100 transition-all duration-300 cursor-pointer">
         <div className="flex-shrink-0">
           <Image
-            src={"https://wsrv.nl?url=" + item.images[0] + "&w=150&h=150&fit=cover&a=attention"}
+            src={
+              "https://wsrv.nl?url=" +
+              item.images[0] +
+              "&w=150&h=150&fit=cover&a=attention"
+            }
             alt={item.name}
             width={150}
             height={150}
@@ -23,16 +27,17 @@ const ItemCard = ({ item }) => {
         <div className="flex flex-col justify-between">
           <h1 className="text-xl font-bold">{item.name}</h1>
           <p className="text-gray-600 flex flex-row items-center gap-2">
-              {
-                item.price.type === "Free" || item.price.amount === 0 ? (
-                  <span className="font-semibold">FREE</span>
-                ) : (
-                  <>
-                    <span className="font-semibold">रु. </span>
-                    {item.price.amount.toLocaleString("ne-NP")}
-                  </>
-                )
-              }
+            {item.price.type === "Free" || item.price.amount === 0 ? (
+              <span className="font-semibold">FREE</span>
+            ) : (
+              <>
+                {new Intl.NumberFormat("en-KE", {
+                  style: "currency",
+                  currency: "KES",
+                  maximumFractionDigits: 0,
+                }).format(item.price.amount)}
+              </>
+            )}
           </p>
           <p className="text-gray-600 flex flex-row items-center gap-2">
             <Icon icon="mdi:location" width="20" height="20" />
@@ -49,7 +54,7 @@ const ItemCard = ({ item }) => {
         </div>
       </div>
     </Link>
-  )
+  );
 };
 
 export default function Home({ data }) {
@@ -57,38 +62,45 @@ export default function Home({ data }) {
   const sortItems = (e) => {
     if (e.target.value === "name-za") {
       setItems([...items].sort((a, b) => b.name.localeCompare(a.name)));
-    }
-    else if (e.target.value === "name") {
+    } else if (e.target.value === "name") {
       setItems([...items].sort((a, b) => a.name.localeCompare(b.name)));
-    }
-    else if (e.target.value === "date") {
-      setItems([...items].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
-    }
-    else if (e.target.value === "date-on") {
-      setItems([...items].sort((a, b) => new Date(a.created_at) - new Date(b.created_at)));
-    }
-    else if (e.target.value === "price") {
+    } else if (e.target.value === "date") {
+      setItems(
+        [...items].sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        )
+      );
+    } else if (e.target.value === "date-on") {
+      setItems(
+        [...items].sort(
+          (a, b) => new Date(a.created_at) - new Date(b.created_at)
+        )
+      );
+    } else if (e.target.value === "price") {
       setItems([...items].sort((a, b) => a.price.amount - b.price.amount));
-    }
-    else if (e.target.value === "price-hl") {
+    } else if (e.target.value === "price-hl") {
       setItems([...items].sort((a, b) => b.price.amount - a.price.amount));
-    }
-    else if (e.target.value === "popular") {
+    } else if (e.target.value === "popular") {
       setItems([...items].sort((a, b) => b.views - a.views));
-    }
-    else if (e.target.value === "popular-lh") {
+    } else if (e.target.value === "popular-lh") {
       setItems([...items].sort((a, b) => a.views - b.views));
     }
-  }
+  };
 
   function searchFilter(keyword) {
     if (keyword.length > 0) {
-      setItems(data.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase()) || item.description.toLowerCase().includes(keyword.toLowerCase()) || item.keywords.includes(keyword.toLowerCase()) || item.category.toLowerCase().includes(keyword.toLowerCase())));
-    }
-    else if (keyword.length === 0) {
+      setItems(
+        data.filter(
+          (item) =>
+            item.name.toLowerCase().includes(keyword.toLowerCase()) ||
+            item.description.toLowerCase().includes(keyword.toLowerCase()) ||
+            item.keywords.includes(keyword.toLowerCase()) ||
+            item.category.toLowerCase().includes(keyword.toLowerCase())
+        )
+      );
+    } else if (keyword.length === 0) {
       setItems(data);
-    }
-    else {
+    } else {
       setItems([]);
     }
   }
@@ -98,7 +110,10 @@ export default function Home({ data }) {
       {/* option to sort items by name, date */}
       <div className="flex flex-row justify-between items-center mx-4 mb-4">
         <h1 className="text-2xl font-semibold">Available Items</h1>
-        <select className="rounded-lg border border-gray-300 px-2 h-10" onChange={sortItems}>
+        <select
+          className="rounded-lg border border-gray-300 px-2 h-10"
+          onChange={sortItems}
+        >
           <option value="date">Newest First</option>
           <option value="date-on">Oldest First</option>
           <option value="name">Name (A-Z)</option>
@@ -120,25 +135,22 @@ export default function Home({ data }) {
         />
       </div>
       <div className="mx-2">
-        {
-          (items.length === 0) && (
-            <div className="flex flex-col justify-center items-center gap-2 mt-14">
-              <Icon icon="akar-icons:search" width="50" height="50" />
-              <p className="text-gray-600 text-xl">No results found</p>
-            </div>
-          )
-        }
+        {items.length === 0 && (
+          <div className="flex flex-col justify-center items-center gap-2 mt-14">
+            <Icon icon="akar-icons:search" width="50" height="50" />
+            <p className="text-gray-600 text-xl">No results found</p>
+          </div>
+        )}
         <div className="flex flex-col justify-between items-center gap-2">
-          {
-            (items.length > 0) && items.map((item, index) => (
+          {items.length > 0 &&
+            items.map((item, index) => (
               <div key={index} className="w-full">
                 <ItemCard item={item} />
                 <hr className="border-gray-300 w-full" />
               </div>
-            ))
-          }
+            ))}
         </div>
       </div>
     </main>
-  )
+  );
 }

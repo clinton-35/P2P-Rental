@@ -23,7 +23,7 @@ const renderPrice = (item) => {
   if (item.price.type === "Fixed" || item.price.type === "Negotiable") {
     return (
       <>
-        <span className={`font-[600] text-gray-700`}>रु. </span>
+        <span className={`font-[600] text-gray-700`}>KES. </span>
         {item.price.amount.toLocaleString("ne-NP")}
       </>
     );
@@ -38,7 +38,7 @@ const renderDeliveryCost = (cost) => {
   } else {
     return (
       <>
-        <span className={`font-[600] text-gray-700`}>रु. </span>
+        <span className={`font-[600] text-gray-700`}>KES. </span>
         {cost.toLocaleString("ne-NP")}
       </>
     );
@@ -138,7 +138,7 @@ export default function ItemClient({ item, related }) {
                       item.status === "sold" ? (
                         <>
                           <Icon icon="bx:bx-check" width={24} height={24} className={`mr-1`} />
-                          Sold Out
+                          On Loan
                         </>
                       ) : (
                         chatLoading ? (

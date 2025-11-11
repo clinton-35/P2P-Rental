@@ -1,15 +1,15 @@
 export const deliveryType = {
   "AnywhereDoorDropoff": {
     "type": "Door Dropoff",
-    "area": "Anywhere in Nepal"
+    "area": "Anywhere in Kenya"
   },
   "AnywhereDoorPickup": {
     "type": "Door Pickup",
-    "area": "Anywhere in Nepal"
+    "area": "Anywhere in Kenya"
   },
   "AnywherePublicMeetup": {
     "type": "Public Meetup",
-    "area": "Anywhere in Nepal"
+    "area": "Anywhere in Kenya"
   },
   "AreaDoorDropoff": {
     "type": "Door Dropoff",

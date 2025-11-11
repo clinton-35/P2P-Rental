@@ -66,7 +66,7 @@ export default function Header() {
         </div>
         <div className="navbar-center cursor-pointer">
           <Link href="/">
-            <Image src={"/logo.png"} width={250} height={80} alt="BechnuParyo" />
+            <Image src={"/logo.png"} width={250} height={80} alt="Park Hub" />
           </Link>
         </div>
         <div className="navbar-end">

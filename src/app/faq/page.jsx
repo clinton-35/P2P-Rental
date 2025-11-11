@@ -5,18 +5,33 @@ export default function FAQ() {
       <main className="leading-8 mt-8">
         <div className="mt-2 space-y-8">
           <div className="border-b pb-2">
-            <h3 className="text-xl font-semibold">What is BechnuParyo?</h3>
-            <p className="text-gray-700">BechnuParyo is a peer-to-peer marketplace where individuals can buy and sell items directly with each other, without the involvement of a third party.</p>
+            <h3 className="text-xl font-semibold">What is PackHub?</h3>
+            <p className="text-gray-700">
+              PackHub is a peer-to-peer rental and sharing platform where people
+              can lend, rent, and access items directly from one another, no
+              middlemen, no extra fees. Just a community powered by convenience
+              and trust.
+            </p>
           </div>
+
           <div className="border-b pb-2">
-            <h3 className="text-xl font-semibold">How can I get started?</h3>
-            <p className="text-gray-700">To get started, create an account, list your items for sale, or start browsing to make a purchase. It&apos;s that simple!</p>
+            <h3 className="text-xl font-semibold">How do I get started?</h3>
+            <p className="text-gray-700">
+              Simply create an account and you’re good to go. List what you want
+              to rent out, or browse items available near you. Book, meet,
+              share. it’s quick and effortless.
+            </p>
           </div>
+
           <div className="border-b pb-2">
-            <h3 className="text-xl font-semibold">Is BechnuParyo free to use?</h3>
-            <p className="text-gray-700">Yes, BechnuParyo is free to use. We do not charge any listing fees or commissions.</p>
+            <h3 className="text-xl font-semibold">Is PackHub free to use?</h3>
+            <p className="text-gray-700">
+              Yes! Creating an account and listing your items is completely
+              free. Our mission is to make sharing accessible, affordable, and
+              fair for everyone.
+            </p>
           </div>
-        </div>  
+        </div>
       </main>
     </div>
   );

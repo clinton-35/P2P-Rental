@@ -10,7 +10,7 @@ const font = Poppins({
 })
 
 export const metadata = {
-  title: "BechnuParyo",
+  title: "Park Hub",
   description: "Buy and sell things directly without third party.",
 }
 

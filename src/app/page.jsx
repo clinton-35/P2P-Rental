@@ -15,7 +15,7 @@ async function getData() {
 }
 
 export const metadata = {
-  title: "BechnuParyo",
+  title: "Park Hub",
   description: "A platform where people can buy and sell things directly with another person without the involvemant of third party.",
 };
 
