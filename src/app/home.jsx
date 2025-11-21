@@ -8,49 +8,61 @@ import { Icon } from "@iconify/react";
 
 const ItemCard = ({ item }) => {
   return (
-    <Link href={`/item/${item._id}`} className="w-full rounded-lg">
-      {/* scale on card hover */}
-      <div className="flex flex-row gap-4 rounded-lg m-2 p-4 hover:bg-gray-100 transition-all duration-300 cursor-pointer">
-        <div className="flex-shrink-0">
+    <Link
+      href={`/item/${item._id}`}
+      className="block w-full transition-transform hover:scale-[1.01]"
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white rounded-2xl shadow-sm hover:shadow-md m-2 p-4 transition-all duration-300 cursor-pointer border border-gray-200">
+        {/* Image */}
+        <div className="col-span-1 flex justify-center items-center">
           <Image
             src={
               "https://wsrv.nl?url=" +
               item.images[0] +
-              "&w=150&h=150&fit=cover&a=attention"
+              "&w=350&h=350&fit=cover&a=attention"
             }
             alt={item.name}
-            width={150}
-            height={150}
-            className="rounded-lg h-[150px] w-[150px] border object-cover hover:scale-105 transition-all duration-300"
+            width={350}
+            height={350}
+            className="rounded-2xl h-[160px] w-[160px] sm:h-[200px] sm:w-[200px] object-cover border shadow-sm hover:scale-105 transition-transform duration-300"
           />
         </div>
-        <div className="flex flex-col justify-between">
-          <h1 className="text-xl font-bold">{item.name}</h1>
-          <p className="text-gray-600 flex flex-row items-center gap-2">
-            {item.price.type === "Free" || item.price.amount === 0 ? (
-              <span className="font-semibold">FREE</span>
-            ) : (
-              <>
-                {new Intl.NumberFormat("en-KE", {
+
+        {/* Content */}
+        <div className="col-span-2 flex flex-col justify-between">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 line-clamp-2">
+              {item.name}
+            </h1>
+            <p className="text-gray-700 text-lg mt-1 font-semibold">
+              {item.price.type === "Free" || item.price.amount === 0 ? (
+                <span className="text-green-600 font-bold">FREE</span>
+              ) : (
+                new Intl.NumberFormat("en-KE", {
                   style: "currency",
                   currency: "KES",
                   maximumFractionDigits: 0,
-                }).format(item.price.amount)}
-              </>
-            )}
-          </p>
-          <p className="text-gray-600 flex flex-row items-center gap-2">
-            <Icon icon="mdi:location" width="20" height="20" />
-            {item.my_location}
-          </p>
-          <p className="text-gray-600 flex flex-row items-center gap-2">
-            <Icon icon="material-symbols:category" width="20" height="20" />
-            {item.category}
-          </p>
-          <p className="text-gray-600 flex flex-row items-center gap-2">
-            <Icon icon="mingcute:time-fill" width="20" height="20" />
-            {ConvertDateToDaysAgo(item.created_at)}
-          </p>
+                }).format(item.price.amount)
+              )}
+            </p>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-3 text-gray-600 text-sm">
+            <p className="flex items-center gap-2">
+              <Icon icon="mdi:location" width={18} height={18} />
+              {item.my_location}
+            </p>
+
+            <p className="flex items-center gap-2">
+              <Icon icon="material-symbols:category" width={18} height={18} />
+              {item.category}
+            </p>
+
+            <p className="flex items-center gap-2">
+              <Icon icon="mingcute:time-fill" width={18} height={18} />
+              {ConvertDateToDaysAgo(item.created_at)}
+            </p>
+          </div>
         </div>
       </div>
     </Link>
@@ -59,97 +71,126 @@ const ItemCard = ({ item }) => {
 
 export default function Home({ data }) {
   const [items, setItems] = useState(data);
+
   const sortItems = (e) => {
-    if (e.target.value === "name-za") {
-      setItems([...items].sort((a, b) => b.name.localeCompare(a.name)));
-    } else if (e.target.value === "name") {
-      setItems([...items].sort((a, b) => a.name.localeCompare(b.name)));
-    } else if (e.target.value === "date") {
-      setItems(
-        [...items].sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        )
-      );
-    } else if (e.target.value === "date-on") {
-      setItems(
-        [...items].sort(
-          (a, b) => new Date(a.created_at) - new Date(b.created_at)
-        )
-      );
-    } else if (e.target.value === "price") {
-      setItems([...items].sort((a, b) => a.price.amount - b.price.amount));
-    } else if (e.target.value === "price-hl") {
-      setItems([...items].sort((a, b) => b.price.amount - a.price.amount));
-    } else if (e.target.value === "popular") {
-      setItems([...items].sort((a, b) => b.views - a.views));
-    } else if (e.target.value === "popular-lh") {
-      setItems([...items].sort((a, b) => a.views - b.views));
-    }
+    const value = e.target.value;
+    const sorted = [...items];
+
+    const sortLogic = {
+      "name-za": () => sorted.sort((a, b) => b.name.localeCompare(a.name)),
+      name: () => sorted.sort((a, b) => a.name.localeCompare(b.name)),
+      date: () => sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+      "date-on": () => sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)),
+      price: () => sorted.sort((a, b) => a.price.amount - b.price.amount),
+      "price-hl": () => sorted.sort((a, b) => b.price.amount - a.price.amount),
+      popular: () => sorted.sort((a, b) => b.views - a.views),
+      "popular-lh": () => sorted.sort((a, b) => a.views - b.views),
+    };
+
+    sortLogic[value]?.();
+    setItems([...sorted]);
   };
 
   function searchFilter(keyword) {
-    if (keyword.length > 0) {
+    const lower = keyword.toLowerCase();
+    if (lower.length > 0) {
       setItems(
         data.filter(
           (item) =>
-            item.name.toLowerCase().includes(keyword.toLowerCase()) ||
-            item.description.toLowerCase().includes(keyword.toLowerCase()) ||
-            item.keywords.includes(keyword.toLowerCase()) ||
-            item.category.toLowerCase().includes(keyword.toLowerCase())
+            item.name.toLowerCase().includes(lower) ||
+            item.description.toLowerCase().includes(lower) ||
+            item.keywords.includes(lower) ||
+            item.category.toLowerCase().includes(lower)
         )
       );
-    } else if (keyword.length === 0) {
-      setItems(data);
     } else {
-      setItems([]);
+      setItems(data);
     }
   }
 
   return (
-    <main className="max-w-screen-xl mx-auto mt-[80px]">
-      {/* option to sort items by name, date */}
-      <div className="flex flex-row justify-between items-center mx-4 mb-4">
-        <h1 className="text-2xl font-semibold">Available Items</h1>
-        <select
-          className="rounded-lg border border-gray-300 px-2 h-10"
-          onChange={sortItems}
-        >
-          <option value="date">Newest First</option>
-          <option value="date-on">Oldest First</option>
-          <option value="name">Name (A-Z)</option>
-          <option value="name-za">Name (Z-A)</option>
-          <option value="price">Price (Low to High)</option>
-          <option value="price-hl">Price (High to Low)</option>
-          <option value="popular-lh">Least Popular First</option>
-          <option value="popular">Most Popular First</option>
-        </select>
-      </div>
+    <main className="max-w-screen-xl mx-auto mt-[80px] px-4">
+      {/* Header */}
+<div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 bg-white p-4 rounded-2xl shadow-md">
+  {/* Title */}
+  <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 tracking-tight">
+    Available Items
+  </h1>
 
-      {/* search box */}
-      <div className="flex flex-row justify-between items-center gap-2 mx-4 mb-4">
-        <input
-          type="text"
-          placeholder="Enter search term"
-          className="rounded-lg border border-gray-300 px-2 h-[45px] w-full outline-none"
-          onChange={(e) => searchFilter(e.target.value)}
-        />
-      </div>
-      <div className="mx-2">
-        {items.length === 0 && (
-          <div className="flex flex-col justify-center items-center gap-2 mt-14">
+  {/* Sort Dropdown */}
+  <select
+    className="
+      rounded-full
+      border
+      border-gray-300
+      px-5
+      py-2
+      shadow-sm
+      focus:border-blue-500
+      focus:ring-2
+      focus:ring-blue-500
+      outline-none
+      transition
+      duration-300
+      bg-white
+      text-gray-700
+    "
+    onChange={sortItems}
+  >
+    <option value="date">Newest First</option>
+    <option value="date-on">Oldest First</option>
+    <option value="name">Name (A-Z)</option>
+    <option value="name-za">Name (Z-A)</option>
+    <option value="price">Price (Low to High)</option>
+    <option value="price-hl">Price (High to Low)</option>
+    <option value="popular-lh">Least Popular First</option>
+    <option value="popular">Most Popular First</option>
+  </select>
+</div>
+
+
+      {/* Search */}
+      <div className="relative w-full">
+  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+    <Icon icon="akar-icons:search" width={20} height={20} />
+  </span>
+  <input
+    type="text"
+    placeholder="Search items..."
+    className="
+      w-full
+      rounded-full
+      border
+      border-gray-300
+      px-12
+      py-3
+      shadow-sm
+      outline-none
+      focus:border-blue-400
+      focus:ring-2
+      focus:ring-blue-400
+      transition
+      duration-300
+      placeholder-gray-400
+    "
+    onChange={(e) => searchFilter(e.target.value)}
+  />
+</div>
+
+      {/* Items */}
+      <div>
+        {items.length === 0 ? (
+          <div className="flex flex-col justify-center items-center gap-2 mt-14 text-gray-600">
             <Icon icon="akar-icons:search" width="50" height="50" />
-            <p className="text-gray-600 text-xl">No results found</p>
+            <p className="text-xl">No results found</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4 pb-10">
+            {items.map((item, index) => (
+              <ItemCard key={index} item={item} />
+            ))}
           </div>
         )}
-        <div className="flex flex-col justify-between items-center gap-2">
-          {items.length > 0 &&
-            items.map((item, index) => (
-              <div key={index} className="w-full">
-                <ItemCard item={item} />
-                <hr className="border-gray-300 w-full" />
-              </div>
-            ))}
-        </div>
       </div>
     </main>
   );
