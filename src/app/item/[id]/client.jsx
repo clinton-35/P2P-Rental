@@ -90,20 +90,28 @@ export default function ItemClient({ item, related }) {
           });
         });
     } else if (session.status === "unauthenticated") {
-      Swal.fire({
-        title: "Login Required",
-        text: "You must be logged in to chat with the seller.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Login",
-        cancelButtonText: "Cancel",
-        reverseButtons: true,
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = "/login";
-        }
-      });
-    }
+  Swal.fire({
+  title: "Login Required",
+  text: "You must be logged in to chat with the seller.",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonText: "Login",
+  cancelButtonText: "Cancel",
+  reverseButtons: true,
+  customClass: {
+    actions: "flex justify-center gap-4", // add spacing between buttons
+    confirmButton: "bg-gradient-to-r from-red-500 to-red-700 text-white px-5 py-2 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-all",
+    cancelButton: "bg-gray-400 text-white px-5 py-2 rounded-xl shadow-md hover:scale-105 hover:shadow-xl transition-all",
+  },
+  buttonsStyling: false,
+}).then((result) => {
+  if (result.isConfirmed) {
+    window.location.href = "/login";
+  }
+});
+}
+
+
   };
 
   return (

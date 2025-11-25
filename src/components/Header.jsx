@@ -9,7 +9,7 @@ import { getSession, signOut } from "next-auth/react";
 export default function Header() {
   const [status, setStatus] = useState("loading");
   const [user, setUser] = useState(null);
-  
+
   useEffect(() => {
     getSession().then((session) => {
       if (session) {
@@ -19,61 +19,66 @@ export default function Header() {
         setStatus("unauthenticated");
       }
     });
-  }
-  , []);
+  }, []);
 
   const navigation = [
-    {
-      title: "Home",
-      path: "/",
-      icon: "ic:baseline-home",
-    },
-    {
-      title: "About Us",
-      path: "/about",
-      icon: "ic:baseline-info",
-    },
-    {
-      title: "FAQ",
-      path: "/faq",
-      icon: "ic:baseline-question-answer",
-    }
+    { title: "Home", path: "/", icon: "ic:baseline-home" },
+    { title: "About Us", path: "/about", icon: "ic:baseline-info" },
+    { title: "FAQ", path: "/faq", icon: "ic:baseline-question-answer" },
   ];
 
   return (
-    <div className="shadow fixed top-0 left-0 right-0 z-[100]">
-      <div className="navbar bg-base-100 max-w-screen-xl mx-auto">
-        <div className="navbar-start">
-          <div className="dropdown dropdown-hover">
-            <label tabIndex={0} className="btn btn-ghost btn-circle">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
-            </label>
-            <ul tabIndex={0} className="dropdown-content font-medium z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-48">
-              {
-                navigation.map((item, index) => {
-                  return (
-                    <li key={index}>
-                      <Link href={item.path}>
-                        <Icon icon={item.icon} width={25} height={25} />
-                        {item.title}
-                      </Link>
-                    </li>
-                  );
-                })
-              }
-            </ul>
+    <>
+      {/* Fixed Navbar */}
+      <div className="shadow fixed top-0 left-0 right-0 z-[100] bg-base-100">
+        <div className="navbar max-w-screen-xl mx-auto">
+          {/* Navbar Start */}
+          <div className="navbar-start">
+            <div className="dropdown dropdown-hover">
+              <label tabIndex={0} className="btn btn-ghost btn-circle">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16M4 18h7"
+                  />
+                </svg>
+              </label>
+              <ul
+                tabIndex={0}
+                className="dropdown-content font-medium z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-48"
+              >
+                {navigation.map((item, index) => (
+                  <li key={index}>
+                    <Link href={item.path} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md">
+                      <Icon icon={item.icon} width={25} height={25} />
+                      {item.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
-        <div className="navbar-center cursor-pointer">
-          <Link href="/">
-            <Image src={"/logo.png"} width={250} height={80} alt="Park Hub" />
-          </Link>
-        </div>
-        <div className="navbar-end">
-          <div className="dropdown dropdown-hover dropdown-end">
-            <button tabIndex={0} className="btn btn-ghost btn-circle">
-              {
-                (status === "authenticated") && (
+
+          {/* Navbar Center (Logo) */}
+          <div className="navbar-center cursor-pointer">
+            <Link href="/">
+              <Image src="/logo.png" width={250} height={80} alt="Park Hub" />
+            </Link>
+          </div>
+
+          {/* Navbar End (User Menu) */}
+          <div className="navbar-end">
+            <div className="dropdown dropdown-hover dropdown-end">
+              <button tabIndex={0} className="btn btn-ghost btn-circle">
+                {status === "authenticated" && (
                   <Image
                     src={user.image}
                     width={35}
@@ -81,81 +86,85 @@ export default function Header() {
                     alt={user.name}
                     className="rounded-full shadow-md"
                   />
-                )
-              }
-              {
-                (status === "loading") && (
+                )}
+                {status === "loading" && (
                   <Icon icon="la:spinner" className="animate-spin" width={30} height={30} />
-                )
-              }
-              {
-                (status === "unauthenticated") && (
+                )}
+                {status === "unauthenticated" && (
                   <Icon icon="teenyicons:user-circle-solid" width={35} height={35} />
-                )
-              }
-            </button>
-            <ul tabIndex={0} className="dropdown-content font-medium z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-48">
-              {
-                (status === "authenticated") && (
+                )}
+              </button>
+              <ul
+                tabIndex={0}
+                className="dropdown-content font-medium z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-48"
+              >
+                {status === "authenticated" && (
                   <>
                     <li>
-                      <Link href={`/lists`}>
-                        <Image src={user.image} width={25} height={25} alt={user.name} className="rounded-full shadow-md" onError={(e) => {e.target.onerror = null; e.target.src="/next.svg"}} />
+                      <Link href="/lists" className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md">
+                        <Image
+                          src={user.image}
+                          width={25}
+                          height={25}
+                          alt={user.name}
+                          className="rounded-full shadow-md"
+                          onError={(e) => { e.target.onerror = null; e.target.src = "/next.svg"; }}
+                        />
                         My Listings
                       </Link>
                     </li>
                     <li>
-                      <Link href="/inbox">
+                      <Link href="/inbox" className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md">
                         <Icon icon="ic:baseline-chat" width={25} height={25} />
                         Inbox
                       </Link>
                     </li>
                     <li>
-                      <Link href="/create">
+                      <Link href="/create" className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md">
                         <Icon icon="gala:add" width={25} height={25} />
                         Post Ad
                       </Link>
                     </li>
                     <li>
-                      <p onClick={() => signOut()}>
+                      <p onClick={() => signOut()} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md cursor-pointer">
                         <Icon icon="material-symbols:logout-rounded" width={25} height={25} />
                         Logout
                       </p>
                     </li>
                   </>
-                )
-              }
-              {
-                (status === "loading") && (
-                  <li>
+                )}
+
+                {status === "loading" && (
+                  <li className="flex items-center gap-2 px-3 py-2">
                     <Icon icon="la:spinner" className="animate-spin" width={25} height={25} />
                     Loading
                   </li>
-                )
-              }
-              {
-  (status === "unauthenticated") && (
-    <>
-      <li>
-        <Link href="/login">
-          <Icon icon="ic:round-login" width={25} height={25} />
-          Login
-        </Link>
-      </li>
-      <li>
-        <Link href="/register">
-          <Icon icon="ic:baseline-apps" width={25} height={25} />
-          Register
-        </Link>
-      </li>
-    </>
-  )
-}
+                )}
 
-            </ul>
+                {status === "unauthenticated" && (
+                  <>
+                    <li>
+                      <Link href="/login" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition">
+                        <Icon icon="mdi:login-variant" width={25} height={25} />
+                        Login
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/register" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-600 transition">
+                        <Icon icon="mdi:account-plus" width={25} height={25} />
+                        Register
+                      </Link>
+                    </li>
+                  </>
+                )}
+              </ul>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Spacer to push page content below fixed navbar */}
+      <div className="h-10"></div> {/* Adjust height to match navbar */}
+    </>
   );
 }
