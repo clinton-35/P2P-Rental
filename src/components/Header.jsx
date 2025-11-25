@@ -134,15 +134,24 @@ export default function Header() {
                 )
               }
               {
-                (status === "unauthenticated") && (
-                  <li>
-                    <Link href="/login">
-                      <Icon icon="ic:round-login" width={25} height={25} />
-                      Login
-                    </Link>
-                  </li>
-                )
-              }
+  (status === "unauthenticated") && (
+    <>
+      <li>
+        <Link href="/login">
+          <Icon icon="ic:round-login" width={25} height={25} />
+          Login
+        </Link>
+      </li>
+      <li>
+        <Link href="/register">
+          <Icon icon="ic:baseline-apps" width={25} height={25} />
+          Register
+        </Link>
+      </li>
+    </>
+  )
+}
+
             </ul>
           </div>
         </div>
