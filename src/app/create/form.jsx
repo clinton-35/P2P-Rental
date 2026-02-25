@@ -350,7 +350,7 @@ export default function Form({ item: editItem }) {
               <TextInput
                 required
                 type="number"
-                label="Price"
+                label="Price per day"
                 placeholder="e.g. 150000"
                 error={priceError}
                 setError={setPriceError}
@@ -369,7 +369,7 @@ export default function Form({ item: editItem }) {
               required
               type="text"
               label="My Location"
-              placeholder="e.g. Birtamod, Jhapa"
+              placeholder="e.g. Nairobi, Mombasa"
               error={myLocationError}
               setError={setMyLocationError}
               value={myLocation}
