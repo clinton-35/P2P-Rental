@@ -57,7 +57,10 @@ export default function Header() {
               >
                 {navigation.map((item, index) => (
                   <li key={index}>
-                    <Link href={item.path} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md">
+                    <Link
+                      href={item.path}
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                    >
                       <Icon icon={item.icon} width={25} height={25} />
                       {item.title}
                     </Link>
@@ -88,10 +91,19 @@ export default function Header() {
                   />
                 )}
                 {status === "loading" && (
-                  <Icon icon="la:spinner" className="animate-spin" width={30} height={30} />
+                  <Icon
+                    icon="la:spinner"
+                    className="animate-spin"
+                    width={30}
+                    height={30}
+                  />
                 )}
                 {status === "unauthenticated" && (
-                  <Icon icon="teenyicons:user-circle-solid" width={35} height={35} />
+                  <Icon
+                    icon="teenyicons:user-circle-solid"
+                    width={35}
+                    height={35}
+                  />
                 )}
               </button>
               <ul
@@ -101,33 +113,65 @@ export default function Header() {
                 {status === "authenticated" && (
                   <>
                     <li>
-                      <Link href="/lists" className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md">
+                      <Link
+                        href="/lists"
+                        className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                      >
                         <Image
                           src={user.image}
                           width={25}
                           height={25}
                           alt={user.name}
                           className="rounded-full shadow-md"
-                          onError={(e) => { e.target.onerror = null; e.target.src = "/next.svg"; }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/next.svg";
+                          }}
                         />
                         My Listings
                       </Link>
                     </li>
                     <li>
-                      <Link href="/inbox" className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md">
+                      <Link
+                        href="/bookings"
+                        className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                      >
+                        <Icon
+                          icon="mdi:calendar-check-outline"
+                          width={25}
+                          height={25}
+                        />
+                        Bookings
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/inbox"
+                        className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                      >
                         <Icon icon="ic:baseline-chat" width={25} height={25} />
                         Inbox
                       </Link>
                     </li>
                     <li>
-                      <Link href="/create" className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md">
+                      <Link
+                        href="/create"
+                        className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                      >
                         <Icon icon="gala:add" width={25} height={25} />
                         Post Ad
                       </Link>
                     </li>
                     <li>
-                      <p onClick={() => signOut()} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md cursor-pointer">
-                        <Icon icon="material-symbols:logout-rounded" width={25} height={25} />
+                      <p
+                        onClick={() => signOut()}
+                        className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md cursor-pointer"
+                      >
+                        <Icon
+                          icon="material-symbols:logout-rounded"
+                          width={25}
+                          height={25}
+                        />
                         Logout
                       </p>
                     </li>
@@ -136,7 +180,12 @@ export default function Header() {
 
                 {status === "loading" && (
                   <li className="flex items-center gap-2 px-3 py-2">
-                    <Icon icon="la:spinner" className="animate-spin" width={25} height={25} />
+                    <Icon
+                      icon="la:spinner"
+                      className="animate-spin"
+                      width={25}
+                      height={25}
+                    />
                     Loading
                   </li>
                 )}
@@ -144,13 +193,19 @@ export default function Header() {
                 {status === "unauthenticated" && (
                   <>
                     <li>
-                      <Link href="/login" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition">
+                      <Link
+                        href="/login"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition"
+                      >
                         <Icon icon="mdi:login-variant" width={25} height={25} />
                         Login
                       </Link>
                     </li>
                     <li>
-                      <Link href="/register" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-600 transition">
+                      <Link
+                        href="/register"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-600 transition"
+                      >
                         <Icon icon="mdi:account-plus" width={25} height={25} />
                         Register
                       </Link>
@@ -162,7 +217,6 @@ export default function Header() {
           </div>
         </div>
       </div>
-
       {/* Spacer to push page content below fixed navbar */}
       <div className="h-10"></div> {/* Adjust height to match navbar */}
     </>
