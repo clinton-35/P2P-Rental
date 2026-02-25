@@ -11,6 +11,7 @@ export async function POST(request) {
     const { db } = await ConnectToDatabase();
     const items = await db.collection("Items");
     const data = await request.json();
+    delete data.status;
 
     if (data._id) {
       const id = data._id;

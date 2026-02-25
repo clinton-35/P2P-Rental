@@ -38,7 +38,6 @@ export default function Form({ item: editItem }) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [condition, setCondition] = useState("Good");
   const [category, setCategory] = useState("Others");
-  const [status, setStatus] = useState("available");
   const [visibility, setVisibility] = useState("public");
   const [tempKeywords, setTempKeywords] = useState("");
   const [price, setPrice] = useState({
@@ -71,7 +70,6 @@ export default function Form({ item: editItem }) {
       setPrice(editItem.price);
       setDelivery(editItem.delivery);
       setTempKeywords(editItem.keywords.join(", "));
-      setStatus(editItem.status);
       setVisibility(editItem.visibility);
     }
   }, [editItem, editMode]);
@@ -252,7 +250,6 @@ export default function Form({ item: editItem }) {
       },
       delivery,
       my_location: myLocation,
-      status,
       visibility,
       views: editMode ? editItem.views : 0,
       keywords,
