@@ -14,7 +14,7 @@ const ItemCard = ({ item }) => {
     >
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white rounded-2xl shadow-sm hover:shadow-md m-2 p-4 transition-all duration-300 cursor-pointer border border-gray-200">
         {/* Image */}
-        <div className="col-span-1 flex justify-center items-center">
+        <div className="col-span-1 flex justify-center items-center relative">
           <Image
             src={
               "https://wsrv.nl?url=" +
@@ -26,6 +26,16 @@ const ItemCard = ({ item }) => {
             height={350}
             className="rounded-2xl h-[160px] w-[160px] sm:h-[200px] sm:w-[200px] object-cover border shadow-sm hover:scale-105 transition-transform duration-300"
           />
+          {/* Availability Badge */}
+          <span
+            className={`absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-full shadow-sm ${
+              item.isAvailable
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-600"
+            }`}
+          >
+            {item.isAvailable ? "Available" : "Unavailable"}
+          </span>
         </div>
 
         {/* Content */}
@@ -52,12 +62,10 @@ const ItemCard = ({ item }) => {
               <Icon icon="mdi:location" width={18} height={18} />
               {item.my_location}
             </p>
-
             <p className="flex items-center gap-2">
               <Icon icon="material-symbols:category" width={18} height={18} />
               {item.category}
             </p>
-
             <p className="flex items-center gap-2">
               <Icon icon="mingcute:time-fill" width={18} height={18} />
               {ConvertDateToDaysAgo(item.created_at)}

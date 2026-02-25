@@ -3,13 +3,41 @@ import ConnectToDatabase from "@/modules/mongodb";
 
 export async function GET() {
   const { db } = await ConnectToDatabase();
-  const items = await db.collection("Items");
-  
-  const allItems = await items.aggregate([
+
+  const now = new Date();
+
+  const allItems = await db.collection("Items").aggregate([
     {
       $match: {
-        status: "available",
         visibility: "public",
+      }
+    },
+    // Join bookings to check if item is currently on loan
+    {
+      $lookup: {
+        from: "Bookings",
+        let: { itemId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$itemId", "$$itemId"] },
+                  { $in: ["$status", ["confirmed", "active"]] },
+                  { $lte: ["$startDate", now] },
+                  { $gte: ["$endDate", now] },
+                ]
+              }
+            }
+          },
+          { $limit: 1 }
+        ],
+        as: "activeBookings"
+      }
+    },
+    {
+      $addFields: {
+        isAvailable: { $eq: [{ $size: "$activeBookings" }, 0] }
       }
     },
     {
@@ -23,15 +51,14 @@ export async function GET() {
         price: 1,
         delivery: 1,
         my_location: 1,
-        status: 1,
         seller: 1,
         views: 1,
         keywords: 1,
         created_at: 1,
+        isAvailable: 1,
       }
     }
-  ])
-  .toArray();
+  ]).toArray();
 
   return NextResponse.json(allItems);
 }

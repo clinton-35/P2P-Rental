@@ -225,7 +225,7 @@ export default function ItemClient({ item, related }) {
 
             <div className="flex gap-2">
               {/* Book Button */}
-              {!item.selfOwned && item.status !== "sold" && item.price.type !== "Free" && (
+              {!item.selfOwned && item.isAvailable && item.price.type !== "Free" && (
                 <button
                   onClick={bookButtonClicked}
                   className="px-5 py-2 rounded-xl font-semibold text-white shadow-md transform transition-all duration-500 flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-700 hover:scale-105 hover:shadow-xl"
@@ -247,7 +247,7 @@ export default function ItemClient({ item, related }) {
               >
                 {item.selfOwned ? (
                   <><Icon icon="bx:edit" width={22} /> Edit Item</>
-                ) : item.status === "sold" ? (
+                ) : !item.isAvailable  ? (
                   <><Icon icon="bx:check" width={22} /> On Loan</>
                 ) : chatLoading ? (
                   <><Icon icon="eva:loader-outline" width={22} className="animate-spin" /> Opening Chat…</>

@@ -379,8 +379,7 @@ export default function Form({ item: editItem }) {
               }}
             />
 
-            {/* Status */}
-            <DropDown label="Status" required value={status} onChange={e => setStatus(e.target.value)} options={["available", "sold"]} />
+            
           </div>
 
           <div className="flex flex-col gap-4">
