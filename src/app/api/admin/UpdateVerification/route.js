@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/modules/auth";
 import ConnectToDatabase from "@/modules/mongodb";
 import { ObjectId } from "mongodb";
+import { authOptions } from "@/modules/auth";
 
 const ADMIN_EMAILS = [process.env.ADMIN_EMAIL];
 

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 import Form from "../../create/form";
+import { authOptions } from "@/modules/auth";
 
 async function getItem(id) {
   try{
@@ -22,7 +23,7 @@ async function getItem(id) {
 
 export default async function EditAd({ params }) {
   const { id } = params;
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session) {
     redirect("/login");
   }

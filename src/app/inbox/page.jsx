@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
 import { ConvertDateToDaysAgo } from "@/modules/utilities";
+import { authOptions } from "@/modules/auth";
 
 async function getChatList() {
   try {
@@ -19,7 +20,7 @@ async function getChatList() {
 }
 
 export default async function MessageList() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
   const chatList = await getChatList();

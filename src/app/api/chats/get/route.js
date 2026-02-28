@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import ConnectToDatabase from "@/modules/mongodb";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/modules/auth";
 
 export async function GET(request) {
   const id = request.nextUrl.searchParams.get("id");
@@ -10,7 +11,7 @@ export async function GET(request) {
     return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
   }
 
-  const user = await getServerSession();
+  const user = await getServerSession(authOptions);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { db } = await ConnectToDatabase();

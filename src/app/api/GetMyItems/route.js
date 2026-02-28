@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import ConnectToDatabase from "@/modules/mongodb";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/modules/auth";
 
 export async function GET(request) {
   const { db } = await ConnectToDatabase();
   const users = await db.collection("Users");
-  const user = await getServerSession();
+  const user = await getServerSession(authOptions);
   if (!user) {
     return NextResponse.json({ message: "Not logged in" }, { status: 401 });
   }

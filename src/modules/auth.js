@@ -28,9 +28,15 @@ const authOptions = {
 
         const user = await users.findOne({ email: credentials.email });
         if (!user) throw new Error("No account found with this email.");
-        if (!user.password) throw new Error("This email is registered using Google. Use Google Sign-in.");
+        if (!user.password)
+          throw new Error(
+            "This email is registered using Google. Use Google Sign-in.",
+          );
 
-        const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password);
+        const isPasswordCorrect = await bcrypt.compare(
+          credentials.password,
+          user.password,
+        );
         if (!isPasswordCorrect) throw new Error("Incorrect password.");
 
         return {
@@ -64,7 +70,7 @@ const authOptions = {
         }
 
         // Attach verified status to user object for JWT
-        const dbUser = existing || await users.findOne({ email: user.email });
+        const dbUser = existing || (await users.findOne({ email: user.email }));
         user.verified = dbUser.verified ?? "unverified";
       }
 
@@ -80,10 +86,21 @@ const authOptions = {
       if (trigger === "update") {
         return { ...token, ...session.user };
       }
-      // When user logs in, attach verified from user object
+
+      if (token.email) {
+        const { db } = await ConnectToDatabase();
+        const dbUser = await db
+          .collection("Users")
+          .findOne({ email: token.email }, { projection: { verified: 1 } });
+        if (dbUser) {
+          token.verified = dbUser.verified ?? "unverified";
+        }
+      }
+
       if (user) {
         token.verified = user.verified ?? "unverified";
       }
+
       return { ...token, ...user };
     },
   },

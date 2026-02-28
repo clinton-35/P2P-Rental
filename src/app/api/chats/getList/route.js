@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import ConnectToDatabase from "@/modules/mongodb";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/modules/auth";
 
 export async function GET() {
-  const user = await getServerSession();
+  const user = await getServerSession(authOptions);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { db } = await ConnectToDatabase();

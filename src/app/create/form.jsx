@@ -472,7 +472,7 @@ export default function Form({ item: editItem }) {
                       setDeliveryCostError(false);
                     }
                   }}>
-                  <optgroup label="Anywhere in Nepal">
+                  <optgroup label="Anywhere in Kenya">
                     <option value="AnywherePublicMeetup">Public Meetup</option>
                     <option value="AnywhereDoorPickup">Door Pickup</option>
                     <option value="AnywhereDoorDropoff">Door Dropoff</option>

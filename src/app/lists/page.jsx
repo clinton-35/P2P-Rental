@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getServerSession } from "next-auth";
 import MyItemList from "./show";
 import ListNotFound from "./404";
+import { authOptions } from "@/modules/auth";
 
 async function getMyItems() {
   try{
@@ -22,7 +23,7 @@ async function getMyItems() {
 }
 
 export default async function MyItems() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session) {
     redirect("/login");
   }

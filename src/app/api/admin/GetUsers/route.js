@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/modules/auth";
 import ConnectToDatabase from "@/modules/mongodb";
+import { authOptions } from "@/modules/auth";
 
 const ADMIN_EMAILS = [process.env.ADMIN_EMAIL];
 

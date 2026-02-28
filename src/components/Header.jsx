@@ -86,7 +86,7 @@ export default function Header() {
           {/* Navbar Center */}
           <div className="navbar-center cursor-pointer">
             <Link href="/">
-              <Image src="/logo.png" width={250} height={80} alt="Park Hub" />
+              <Image src="/logo.png" width={250} height={80} alt="Pack Hub" />
             </Link>
           </div>
 

@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import ConnectToDatabase from "@/modules/mongodb";
 import { ObjectId } from "mongodb";
+import { authOptions } from "@/modules/auth";
 
 export async function POST(request) {
   try {
-    const user = await getServerSession();
+    const user = await getServerSession(authOptions);
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     if (user.user.verified !== "verified") {

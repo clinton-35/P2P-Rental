@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import ConnectToDatabase from "@/modules/mongodb";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/modules/auth";
 
 export async function GET(request) {
   const id = request.nextUrl.searchParams.get("id");
@@ -13,7 +14,7 @@ export async function GET(request) {
   const { db } = await ConnectToDatabase();
   const items = db.collection("Items");
   const users = db.collection("Users");
-  const user = await getServerSession();
+  const user = await getServerSession(authOptions);
   const now = new Date();
 
   const response = {};
