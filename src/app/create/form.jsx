@@ -261,16 +261,43 @@ export default function Form({ item: editItem }) {
     setSaving(true);
 
     fetch("/api/CreateAd", {
-      method: "POST",
-      body: JSON.stringify(item)
-    })
-    .then((res) => res.json())
-    .then((data) => {
-      window.location.href = `/item/${data.id}`;
-    })
-    .catch((error) => {
-      setSaving(false);
-    });
+  method: "POST",
+  body: JSON.stringify(item)
+})
+.then(async (res) => {
+  const data = await res.json();
+
+  if (!res.ok) {
+    setSaving(false);
+    if (res.status === 403) {
+      Swal.fire({
+        title: "Verification Required",
+        text: data.error,
+        icon: "warning",
+        confirmButtonText: "Verify Now",
+        showCancelButton: true,
+        cancelButtonText: "Later",
+        reverseButtons: true,
+        customClass: {
+          confirmButton: "bg-red-500 text-white px-5 py-2 rounded-xl shadow-md",
+          cancelButton: "bg-gray-400 text-white px-5 py-2 rounded-xl shadow-md",
+        },
+        buttonsStyling: false,
+      }).then((result) => {
+        if (result.isConfirmed) window.location.href = "/verify";
+      });
+    } else {
+      Swal.fire({ title: "Error", text: data.error || "Something went wrong.", icon: "error" });
+    }
+    return;
+  }
+
+  window.location.href = `/item/${data.id}`;
+})
+.catch(() => {
+  setSaving(false);
+  Swal.fire({ title: "Error", text: "Something went wrong.", icon: "error" });
+});
   }
 
   const deleteItem = () => {

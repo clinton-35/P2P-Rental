@@ -11,6 +11,13 @@ export async function POST(req) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (session.user.verified !== "verified") {
+  return NextResponse.json(
+    { error: "You must be verified to book items." },
+    { status: 403 }
+  );
+}
+
   const body = await req.json();
   const { itemId, startDate, endDate, totalPrice, message } = body;
 

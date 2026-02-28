@@ -8,6 +8,13 @@ export async function POST(request) {
     const user = await getServerSession();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    if (user.user.verified !== "verified") {
+  return NextResponse.json(
+    { error: "You must be verified to post listings." },
+    { status: 403 }
+  );
+}
+
     const { db } = await ConnectToDatabase();
     const items = await db.collection("Items");
     const data = await request.json();

@@ -9,18 +9,16 @@ const authOptions = {
   },
 
   providers: [
-    // Google Login (existing)
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
 
-    // Email + Password Login (NEW)
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "example@gmail.com" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
 
@@ -29,74 +27,62 @@ const authOptions = {
         const users = db.collection("Users");
 
         const user = await users.findOne({ email: credentials.email });
+        if (!user) throw new Error("No account found with this email.");
+        if (!user.password) throw new Error("This email is registered using Google. Use Google Sign-in.");
 
-        if (!user) {
-          throw new Error("No account found with this email.");
-        }
-
-        // User exists but has no password (Google account)
-        if (!user.password) {
-          throw new Error("This email is registered using Google. Use Google Sign-in.");
-        }
-
-        const isPasswordCorrect = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordCorrect) {
-          throw new Error("Incorrect password.");
-        }
+        const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password);
+        if (!isPasswordCorrect) throw new Error("Incorrect password.");
 
         return {
           id: user._id,
           name: user.name,
           email: user.email,
+          verified: user.verified ?? "unverified",
         };
       },
     }),
   ],
 
   callbacks: {
-    // Runs when logging in
     signIn: async ({ user, account }) => {
       const { db } = await ConnectToDatabase();
       const users = db.collection("Users");
 
-      // GOOGLE LOGIN HANDLING
       if (account.provider === "google") {
         const existing = await users.findOne({ email: user.email });
 
         if (!existing) {
-          const newUser = {
+          await users.insertOne({
             name: user.name,
             email: user.email,
             createdAt: new Date().toISOString().split("T")[0],
             provider: "google",
             password: null,
-          };
-          await users.insertOne(newUser);
+            verified: "unverified",
+            verificationDocument: null,
+          });
         }
-        return true;
+
+        // Attach verified status to user object for JWT
+        const dbUser = existing || await users.findOne({ email: user.email });
+        user.verified = dbUser.verified ?? "unverified";
       }
 
-      // CREDENTIALS LOGIN
       return true;
     },
 
-    // Attach user info to session
     session: async ({ session, token }) => {
       session.user = token;
       return session;
     },
 
-    // Attach data into JWT
     jwt: async ({ token, user, trigger, session }) => {
       if (trigger === "update") {
-        return {
-          ...token,
-          ...session.user,
-        };
+        return { ...token, ...session.user };
+      }
+      // When user logs in, attach verified from user object
+      if (user) {
+        token.verified = user.verified ?? "unverified";
       }
       return { ...token, ...user };
     },

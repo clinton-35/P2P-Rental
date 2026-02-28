@@ -9,12 +9,8 @@ export async function POST(req) {
     const users = db.collection("Users");
 
     const exists = await users.findOne({ email });
-
     if (exists) {
-      return Response.json(
-        { error: "User already exists" },
-        { status: 400 }
-      );
+      return Response.json({ error: "User already exists" }, { status: 400 });
     }
 
     const hashed = await hash(password, 10);
@@ -24,13 +20,12 @@ export async function POST(req) {
       email,
       password: hashed,
       createdAt: new Date().toISOString().split("T")[0],
+      verified: "unverified",
+      verificationDocument: null,
     });
 
     return Response.json({ success: true });
   } catch (error) {
-    return Response.json(
-      { error: "Registration failed" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Registration failed" }, { status: 500 });
   }
 }
