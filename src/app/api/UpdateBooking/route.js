@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/modules/auth";
 import ConnectToDatabase from "@/modules/mongodb";
 import { ObjectId } from "mongodb";
-import { authOptions } from "@/modules/auth";
+
+const PLATFORM_FEE_PERCENT = 0.02;
 
 export async function POST(req) {
   try {
@@ -17,29 +19,114 @@ export async function POST(req) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
-    const { db } = await ConnectToDatabase();
+    const { client, db } = await ConnectToDatabase();
+    const mongoSession = client.startSession();
 
-    const user = await db.collection("Users").findOne({ email: session.user.email });
+    try {
+      await mongoSession.withTransaction(async () => {
+        const user = await db.collection("Users").findOne(
+          { email: session.user.email },
+          { session: mongoSession }
+        );
 
-    // Only the owner of the booking can confirm/cancel
-    const booking = await db.collection("Bookings").findOne({ _id: new ObjectId(bookingId) });
-    if (!booking) {
-      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+        const booking = await db.collection("Bookings").findOne(
+          { _id: new ObjectId(bookingId) },
+          { session: mongoSession }
+        );
+        if (!booking) throw new Error("Booking not found");
+
+        if (booking.ownerId.toString() !== user._id.toString()) {
+          throw new Error("Forbidden");
+        }
+
+        // Update booking status
+        await db.collection("Bookings").updateOne(
+          { _id: new ObjectId(bookingId) },
+          { $set: { status } },
+          { session: mongoSession }
+        );
+
+        // Update the renter's transaction record
+        await db.collection("Transactions").updateOne(
+          { bookingId: new ObjectId(bookingId), type: "booking_payment" },
+          { $set: { status: status === "confirmed" ? "completed" : "cancelled" } },
+          { session: mongoSession }
+        );
+
+        if (status === "confirmed") {
+          const item = await db.collection("Items").findOne(
+            { _id: booking.itemId },
+            { session: mongoSession }
+          );
+
+          const platformFee = booking.platformFee ??
+            parseFloat((booking.totalPrice * PLATFORM_FEE_PERCENT).toFixed(2));
+          const ownerEarning = booking.ownerEarning ??
+            parseFloat((booking.totalPrice - platformFee).toFixed(2));
+
+          // Create earning transaction for owner
+          await db.collection("Transactions").insertOne(
+            {
+              userId: booking.ownerId,
+              bookingId: new ObjectId(bookingId),
+              itemId: booking.itemId,
+              renterId: booking.renterId,
+              type: "booking_earning",
+              amount: ownerEarning,
+              platformFee,
+              description: `Earning from "${item?.name ?? "item"}" rental`,
+              status: "completed",
+              paymentStatus: "paid",
+              createdAt: new Date(),
+            },
+            { session: mongoSession }
+          );
+
+          // Create platform fee transaction for admin
+          await db.collection("Transactions").insertOne(
+            {
+              bookingId: new ObjectId(bookingId),
+              itemId: booking.itemId,
+              type: "platform_fee",
+              amount: platformFee,
+              description: `Platform fee from "${item?.name ?? "item"}" rental`,
+              status: "completed",
+              createdAt: new Date(),
+            },
+            { session: mongoSession }
+          );
+
+          // Credit owner balance
+          await db.collection("Users").updateOne(
+            { _id: booking.ownerId },
+            { $inc: { balance: ownerEarning } },
+            { session: mongoSession }
+          );
+
+          // Credit admin wallet
+          await db.collection("AdminWallet").updateOne(
+            {},
+            {
+              $inc: { balance: platformFee },
+              $setOnInsert: { createdAt: new Date() },
+            },
+            { upsert: true, session: mongoSession }
+          );
+        }
+      });
+
+      return NextResponse.json({ success: true });
+
+    } finally {
+      await mongoSession.endSession();
     }
-
-    if (booking.ownerId.toString() !== user._id.toString()) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    await db.collection("Bookings").updateOne(
-      { _id: new ObjectId(bookingId) },
-      { $set: { status } }
-    );
-
-    return NextResponse.json({ success: true });
 
   } catch (err) {
     console.error(err);
+    const knownErrors = ["Booking not found", "Forbidden"];
+    if (knownErrors.includes(err.message)) {
+      return NextResponse.json({ error: err.message }, { status: err.message === "Forbidden" ? 403 : 404 });
+    }
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

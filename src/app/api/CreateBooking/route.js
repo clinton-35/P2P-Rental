@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/modules/auth";
 import ConnectToDatabase from "@/modules/mongodb";
 import { ObjectId } from "mongodb";
-import { authOptions } from "@/modules/auth";
+
+const PLATFORM_FEE_PERCENT = 0.02; // 2%
 
 export async function POST(req) {
-  
+  console.log("CreateBooking API HIT");
 
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -13,11 +15,11 @@ export async function POST(req) {
   }
 
   if (session.user.verified !== "verified") {
-  return NextResponse.json(
-    { error: "You must be verified to book items." },
-    { status: 403 }
-  );
-}
+    return NextResponse.json(
+      { error: "You must be verified to book items." },
+      { status: 403 }
+    );
+  }
 
   const body = await req.json();
   const { itemId, startDate, endDate, totalPrice, message } = body;
@@ -34,36 +36,32 @@ export async function POST(req) {
   }
 
   const { client, db } = await ConnectToDatabase();
-
-  // Start a MongoDB client session for the transaction
   const mongoSession = client.startSession();
 
   try {
     let bookingId;
 
     await mongoSession.withTransaction(async () => {
-      // Step 1: Get renter
+      // Get renter
       const renter = await db.collection("Users").findOne(
         { email: session.user.email },
         { session: mongoSession }
       );
       if (!renter) throw new Error("Renter not found");
 
-      // Step 2: Get item
+      // Get item
       const item = await db.collection("Items").findOne(
         { _id: new ObjectId(itemId) },
         { session: mongoSession }
       );
       if (!item) throw new Error("Item not found");
 
-      // Step 3: Prevent self-booking
+      // Prevent self-booking
       if (item.seller.toString() === renter._id.toString()) {
         throw new Error("You cannot book your own item");
       }
 
-      // Step 4: Atomic overlap check
-      // Finds any booking for this item that overlaps the requested dates
-      // and is not already cancelled
+      // Overlap check
       const conflict = await db.collection("Bookings").findOne(
         {
           itemId: new ObjectId(itemId),
@@ -73,12 +71,15 @@ export async function POST(req) {
         },
         { session: mongoSession }
       );
-
       if (conflict) {
         throw new Error("These dates are already booked. Please choose different dates.");
       }
 
-      // Step 5: Insert booking atomically
+      // Calculate platform fee
+      const platformFee = parseFloat((totalPrice * PLATFORM_FEE_PERCENT).toFixed(2));
+      const ownerEarning = parseFloat((totalPrice - platformFee).toFixed(2));
+
+      // Insert booking
       const result = await db.collection("Bookings").insertOne(
         {
           itemId: new ObjectId(itemId),
@@ -88,6 +89,8 @@ export async function POST(req) {
           startDate: start,
           endDate: end,
           totalPrice,
+          platformFee,
+          ownerEarning,
           message: message || "",
           createdAt: new Date(),
         },
@@ -95,25 +98,40 @@ export async function POST(req) {
       );
 
       bookingId = result.insertedId;
+
+      // Create immutable transaction record for renter (booking payment)
+      await db.collection("Transactions").insertOne(
+        {
+          userId: renter._id,
+          bookingId,
+          itemId: new ObjectId(itemId),
+          ownerId: item.seller,
+          type: "booking_payment",
+          amount: totalPrice,
+          platformFee,
+          ownerEarning,
+          description: `Booking payment for "${item.name}"`,
+          status: "pending",
+          paymentStatus: "unpaid",
+          createdAt: new Date(),
+        },
+        { session: mongoSession }
+      );
     });
 
     return NextResponse.json({ success: true, bookingId });
 
   } catch (err) {
     console.error(err);
-
-    // Surface known business logic errors cleanly to the frontend
     const knownErrors = [
       "Renter not found",
       "Item not found",
       "You cannot book your own item",
       "These dates are already booked. Please choose different dates.",
     ];
-
     if (knownErrors.includes(err.message)) {
       return NextResponse.json({ error: err.message }, { status: 409 });
     }
-
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   } finally {
     await mongoSession.endSession();
