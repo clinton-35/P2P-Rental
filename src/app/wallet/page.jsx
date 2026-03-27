@@ -51,6 +51,7 @@ const statusColors = {
   completed: "bg-green-100 text-green-700",
   failed:    "bg-red-100 text-red-600",
   cancelled: "bg-gray-100 text-gray-600",
+  rejected:  "bg-red-100 text-red-600",
 };
 
 const formatDate = (date) =>
@@ -80,9 +81,18 @@ export default function WalletPage() {
   const [transactions, setTransactions] = useState([]);
   const [typeFilter, setTypeFilter] = useState("all");
   const [search, setSearch] = useState("");
+
+  // Deposit state
   const [depositModal, setDepositModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
+
+  // Withdrawal state
+  const [withdrawModal, setWithdrawModal] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [mpesaNumber, setMpesaNumber] = useState("");
+  const [mpesaName, setMpesaName] = useState("");
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -92,7 +102,6 @@ export default function WalletPage() {
     if (status === "authenticated") {
       fetchWallet();
 
-      // Handle Stripe redirect
       const params = new URLSearchParams(window.location.search);
       if (params.get("deposit") === "success") {
         Swal.fire({
@@ -135,7 +144,6 @@ export default function WalletPage() {
       Swal.fire({ title: "Invalid Amount", text: "Minimum deposit is KES 100.", icon: "warning" });
       return;
     }
-
     setDepositLoading(true);
     try {
       const res = await axios.post("/api/stripe/CreateCheckout", { amount });
@@ -147,6 +155,55 @@ export default function WalletPage() {
         icon: "error",
       });
       setDepositLoading(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    const amount = parseFloat(withdrawAmount);
+    if (!amount || amount < 1000) {
+      Swal.fire({ title: "Invalid Amount", text: "Minimum withdrawal is KES 1,000.", icon: "warning" });
+      return;
+    }
+    if (amount > balance) {
+      Swal.fire({ title: "Insufficient Balance", text: "You don't have enough balance.", icon: "warning" });
+      return;
+    }
+    if (!mpesaNumber || !mpesaName) {
+      Swal.fire({ title: "Missing Details", text: "Please enter your M-Pesa number and name.", icon: "warning" });
+      return;
+    }
+
+    setWithdrawLoading(true);
+    try {
+      await axios.post("/api/RequestWithdrawal", {
+        amount,
+        mpesaNumber,
+        mpesaName,
+      });
+
+      setWithdrawModal(false);
+      setWithdrawAmount("");
+      setMpesaNumber("");
+      setMpesaName("");
+
+      Swal.fire({
+        title: "Withdrawal Requested!",
+        text: "Your request is being reviewed. M-Pesa payment will be sent within 24 hours.",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+
+      // Refresh wallet data
+      fetchWallet();
+
+    } catch (err) {
+      Swal.fire({
+        title: "Error",
+        text: err.response?.data?.error || "Something went wrong.",
+        icon: "error",
+      });
+    } finally {
+      setWithdrawLoading(false);
     }
   };
 
@@ -179,17 +236,27 @@ export default function WalletPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
 
         {/* Balance */}
-        <div className="bg-gradient-to-br from-red-500 to-red-700 rounded-2xl p-6 text-white shadow-lg col-span-1 sm:col-span-1">
+        <div className="bg-gradient-to-br from-red-500 to-red-700 rounded-2xl p-6 text-white shadow-lg">
           <p className="text-sm font-semibold opacity-80 mb-1">Available Balance</p>
           <p className="text-3xl font-extrabold">{formatKES(balance)}</p>
           <p className="text-xs opacity-70 mt-2 mb-4">{session?.user?.name}</p>
-          <button
-            onClick={() => setDepositModal(true)}
-            className="w-full bg-white text-red-600 font-bold py-2 rounded-xl hover:bg-red-50 transition-all flex items-center justify-center gap-2 text-sm"
-          >
-            <Icon icon="mdi:plus-circle-outline" width={18} />
-            Deposit Funds
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDepositModal(true)}
+              className="flex-1 bg-white text-red-600 font-bold py-2 rounded-xl hover:bg-red-50 transition-all flex items-center justify-center gap-1 text-sm"
+            >
+              <Icon icon="mdi:plus-circle-outline" width={16} />
+              Deposit
+            </button>
+            <button
+              onClick={() => setWithdrawModal(true)}
+              disabled={balance < 1000}
+              className="flex-1 bg-white/20 text-white font-bold py-2 rounded-xl hover:bg-white/30 transition-all flex items-center justify-center gap-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Icon icon="mdi:minus-circle-outline" width={16} />
+              Withdraw
+            </button>
+          </div>
         </div>
 
         {/* Total Earned */}
@@ -217,7 +284,6 @@ export default function WalletPage() {
       <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
         <h2 className="text-lg font-bold text-gray-900 mb-4">Transaction History</h2>
 
-        {/* Search + Filter */}
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -245,7 +311,6 @@ export default function WalletPage() {
           </select>
         </div>
 
-        {/* Table */}
         {filteredTransactions.length === 0 ? (
           <div className="text-center text-gray-400 py-16">
             <Icon icon="mdi:receipt-text-outline" width={48} className="mx-auto mb-3" />
@@ -288,7 +353,7 @@ export default function WalletPage() {
                         </span>
                       </td>
                       <td className="py-3 pr-4">
-                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${statusColors[t.status]}`}>
+                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${statusColors[t.status] ?? "bg-gray-100 text-gray-600"}`}>
                           {t.status.charAt(0).toUpperCase() + t.status.slice(1)}
                         </span>
                       </td>
@@ -307,25 +372,18 @@ export default function WalletPage() {
       {/* Deposit Modal */}
       {depositModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold text-gray-900">Deposit Funds</h2>
-              <button
-                onClick={() => setDepositModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
+              <button onClick={() => setDepositModal(false)} className="text-gray-400 hover:text-gray-600">
                 <Icon icon="maki:cross" width={18} />
               </button>
             </div>
-
             <p className="text-sm text-gray-500 mb-4">
-              Enter the amount you want to deposit. You'll be redirected to Stripe to complete the payment.
+              You'll be redirected to Stripe to complete the payment securely.
             </p>
-
             <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Amount (KES) *
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Amount (KES) *</label>
               <input
                 type="number"
                 placeholder="e.g. 1000"
@@ -336,7 +394,6 @@ export default function WalletPage() {
               />
               <p className="text-xs text-gray-400 mt-1">Minimum deposit: KES 100</p>
             </div>
-
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setDepositModal(false)}
@@ -353,6 +410,85 @@ export default function WalletPage() {
                   <><Icon icon="eva:loader-outline" width={18} className="animate-spin" /> Redirecting…</>
                 ) : (
                   <><Icon icon="mdi:credit-card-outline" width={18} /> Pay with Card</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Withdrawal Modal */}
+      {withdrawModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Withdraw Funds</h2>
+              <button onClick={() => setWithdrawModal(false)} className="text-gray-400 hover:text-gray-600">
+                <Icon icon="maki:cross" width={18} />
+              </button>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4 flex gap-2">
+              <Icon icon="mdi:information-outline" width={18} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-yellow-700">
+                Withdrawals are processed manually via M-Pesa within 24 hours. Your balance will be deducted immediately.
+              </p>
+            </div>
+
+            <div className="mb-3">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Amount (KES) *</label>
+              <input
+                type="number"
+                placeholder="e.g. 2000"
+                min={1000}
+                max={balance}
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                className="input input-bordered w-full rounded-xl"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Minimum: KES 1,000 — Available: {formatKES(balance)}
+              </p>
+            </div>
+
+            <div className="mb-3">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">M-Pesa Number *</label>
+              <input
+                type="text"
+                placeholder="e.g. 0712345678"
+                value={mpesaNumber}
+                onChange={(e) => setMpesaNumber(e.target.value)}
+                className="input input-bordered w-full rounded-xl"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">M-Pesa Registered Name *</label>
+              <input
+                type="text"
+                placeholder="e.g. John Doe"
+                value={mpesaName}
+                onChange={(e) => setMpesaName(e.target.value)}
+                className="input input-bordered w-full rounded-xl"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setWithdrawModal(false)}
+                className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleWithdraw}
+                disabled={withdrawLoading}
+                className="px-5 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-red-500 to-red-700 hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {withdrawLoading ? (
+                  <><Icon icon="eva:loader-outline" width={18} className="animate-spin" /> Processing…</>
+                ) : (
+                  <><Icon icon="mdi:bank-transfer-out" width={18} /> Request Withdrawal</>
                 )}
               </button>
             </div>
