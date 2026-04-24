@@ -88,6 +88,14 @@ export default function LoginComponent() {
           >
             Login
           </motion.button>
+          <div className="text-right mt-1">
+            <a
+              href="/forgot-password"
+              className="text-gray-400 text-xs hover:text-red-500 transition-all"
+            >
+              Forgot password?
+            </a>
+          </div>
         </form>
 
         {/* Divider */}
@@ -119,7 +127,8 @@ export default function LoginComponent() {
           and{" "}
           <span className="text-blue-600 hover:underline cursor-pointer">
             Privacy Policy
-          </span>.
+          </span>
+          .
         </p>
       </motion.div>
     </main>
