@@ -193,7 +193,7 @@ export default function ItemClient({ item, related }) {
           <div className="lg:col-span-2 space-y-6">
 
             {/* Main carousel */}
-            <div className="rounded-2xl overflow-hidden shadow-md bg-white aspect-[4/3]">
+            <div className="rounded-2xl overflow-hidden shadow-md bg-white">
               <ImageCarousel
                 images={item.images}
                 activeImageIndex={activeImageIndex}
