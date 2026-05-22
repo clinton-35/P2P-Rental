@@ -221,7 +221,7 @@ export default function Header() {
                     {user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
                       <li>
                         <Link
-                          href="/admin/wallet"
+                          href="/admin"
                           className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
                         >
                           <Icon
@@ -229,7 +229,7 @@ export default function Header() {
                             width={25}
                             height={25}
                           />
-                          Admin Wallet
+                          Admin Dashboard
                         </Link>
                       </li>
                     )}

@@ -21,14 +21,12 @@ export default function RegisterComponent() {
     const password = form.get("password");
     const confirm = form.get("confirm");
 
-     // Email regex validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    setError("Please enter a valid email address.");
-    return;
-  }
-
-  
+    // Email regex validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
 
     if (password !== confirm) {
       setError("Passwords do not match.");
@@ -122,6 +120,9 @@ export default function RegisterComponent() {
             required
             className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
           />
+          <p className="text-xs text-gray-400 -mt-2">
+            At least 8 characters with letters and numbers
+          </p>
 
           <input
             type="password"
@@ -170,7 +171,8 @@ export default function RegisterComponent() {
           and{" "}
           <span className="text-blue-600 hover:underline cursor-pointer">
             Privacy Policy
-          </span>.
+          </span>
+          .
         </p>
 
         <p className="text-center text-gray-600 text-sm mt-4">

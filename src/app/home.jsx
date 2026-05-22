@@ -12,7 +12,7 @@ const CATEGORIES = [
   { label: "Electronics", icon: "mdi:laptop" },
   { label: "Vehicles", icon: "mdi:car" },
   { label: "Tools", icon: "mdi:wrench" },
-  { label: "Cameras", icon: "mdi:camera" },
+  { label: "Videography", icon: "mdi:camera" },
   { label: "Audio Devices", icon: "mdi:headphones" },
   { label: "Gaming", icon: "mdi:gamepad-variant" },
   { label: "Furniture", icon: "mdi:sofa" },
